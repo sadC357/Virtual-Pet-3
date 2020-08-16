@@ -31,17 +31,36 @@ function setup() {
   addFood=createButton("Add Food");
   addFood.position(800,95);
   addFood.mousePressed(addFoods);
-}
-
-function draw() {  
-  background(46,139,87);
-  foodObj.display();
-  fill(255,255,254);
-  textSize(15);
   readState=database.ref('gameState');
   readState.on("value",function(data){
     gameState=data.val();
   })
+  fedTime=database.ref('FeedTime');
+  fedTime.on("value",function(data){
+    lastFed=data.val();
+  })
+}
+
+function draw() {  
+  background(46,139,87);
+  currentTime=hour();
+  console.log(currentTime);
+  if (currentTime===(lastFed+1)) {
+      update("playing");
+      foodObj.garden();
+  } else if(currentTime===(lastFed+2)){
+      update("sleeping");
+      foodObj.bedroom();
+  } else if(currentTime===(lastFed+1)&&currentTime===(lastFed+4)){
+      update("bathing");
+      foodObj.washroom();
+  }else{
+      update("hungry");
+      foodObj.display();
+  }
+  foodObj.display();
+  fill(255,255,254);
+  textSize(15);
   if (gameState!=="hungry") {
     feed.hide();
     addFood.hide();
@@ -50,17 +69,6 @@ function draw() {
     feed.show();
     addFood.show();
     dog.addImage(dogIMG);
-  }
-  fedTime=database.ref('Feed Time');
-  fedTime.on("value",function(data){
-    lastFed=data.val();
-  })
-  if (lastFed>=12) {
-    text("last fed:"+lastFed%12+"PM",350,30);
-  }else if(lastFed===0){
-    text("last fed: 12 AM",350,30);
-  }else{
-    text("last fed:"+lastFed+"AM",350,30);
   }
   //text("Food Remaining:"+foodS,170,100);
   drawSprites();
